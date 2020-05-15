@@ -32,7 +32,7 @@ class PUGCL(object):
         self.modules_names_with_cls = self.find_modules_names(with_classifier=True)
         self.modules_names_without_cls = self.find_modules_names(with_classifier=False)
 
-    def train(self, task, x, y):
+    def train(self, task, xtrain, ytrain, xvalid, yvalid):
 
         # Update learning rate based on parameter uncertainty:
         params_dict = self.update_lr(task)
@@ -43,21 +43,18 @@ class PUGCL(object):
 
         # Store best model
         best_model = copy.deepcopy(self.model.state_dict())
-        lr = self.init_lr
+        low_rate_tasks = [0, 4, 7, 9]
+        if task not in low_rate_tasks:
+            lr = 0.05
+            for param_group in self.optimizer.param_groups:
+                param_group['lr'] = lr
+        else:
+            lr = self.init_lr
         patience = self.lr_patience
 
         # Iterate over number of epochs
         try:
             for epoch in range(self.n_epochs):
-                # Split data into train and validation:
-                # First shuffle
-                shuffled_index = torch.randperm(x.shape[0])
-                xtrain = x[shuffled_index, :]
-                xvalid = x[0:50,:]
-                xtrain = x[50:,:]
-                ytrain = y[shuffled_index, :]
-                yvalid = y[0:50,:]
-                ytrain = y[50:,:]
                 # Train
                 clock0=time.time()
                 self.train_epoch(task, xtrain, ytrain)
@@ -65,34 +62,44 @@ class PUGCL(object):
                 train_loss = self.eval(task, xtrain, ytrain)
                 clock2=time.time()
 
-                print('| Epoch {:3d}, time={:5.1f}ms/{:5.1f}ms | Train: loss={:.3f} |'.format(epoch+1,
+                print('| Epoch {:3d}, time={:5.1f}ms/{:5.1f}ms | Training loss: {:.3f} |'.format(epoch+1,
                     1000*self.batch_size*(clock1-clock0)/xtrain.size(0),1000*self.batch_size*(clock2-clock1)/xtrain.size(0),
                     train_loss),end='')
 
                 # Validation:
                 valid_loss = self.eval(task, xvalid, yvalid)
-                print(' Valid: loss={:.3f} |'.format(valid_loss), end='')
+                # Print learning rate
+                print(' Learning rate: {:.3f} |'.format(lr), end='')
 
                 # Check if loss is nan
                 if math.isnan(valid_loss) or math.isnan(train_loss):
-                    print("Loss became nan, stopping training with saved model")
+                    print("\nLoss became nan, stopping training with saved model")
                     break
 
-                # Adaptive learning rate:
-                if valid_loss < best_loss:
-                    best_loss = valid_loss
-                    best_model = copy.deepcopy(self.model.state_dict())
-                    patience = self.lr_patience
-                    print(' *', end='')
+                # Adapt lr
+                if valid_loss<best_loss:
+                    best_loss=valid_loss
+                    best_model=copy.deepcopy(self.model.state_dict())
+                    patience=self.lr_patience
+                    print(' *',end='')
                 else:
-                    patience -= 1
-                    if patience <= 0:
-                        lr /= self.lr_factor
-                        print()
-                        break
-                    patience = self.lr_patience
-                    params_dict = self.update_lr(task, adaptive_lr=True, lr=lr)
-                    self.optimizer = BayesianSGD(params = params_dict)
+                    patience-=1
+                    if patience<=0:
+                        lr/=self.lr_factor
+                        print(' lr={:.1e}'.format(lr),end='')
+                        if lr<self.lr_min:
+                            print()
+                            break
+                        patience=self.lr_patience
+
+                        params_dict = self.update_lr(task, adaptive_lr=True, lr=lr)
+                        self.optimizer=BayesianSGD(params=params_dict)
+
+                # Increase leanring rate if possible:
+                if epoch > 30 and train_loss > 2:
+                    lr = 0.08
+                    for param_group in self.optimizer.param_groups:
+                        param_group['lr'] = lr
 
                 print()
 
@@ -268,7 +275,7 @@ class PUGCL(object):
 
             # This is where a custom loss function must be implemented:
             #negative_log_likelihood = w3*torch.nn.functional.nll_loss(outputs.mean(0), target, reduction='sum').to(device=self.device)
-            loss = self.loss(outputs.mean(0), target).to(device=self.device)
+            loss = w3*self.loss(outputs.mean(0), target).to(device=self.device)
 
             return (log_var - log_p)/num_batches + loss
 
