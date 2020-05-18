@@ -30,16 +30,16 @@ def get(data_path):
         data[i] = {}
         data[i]['name'] = action
         data[i]['n_outputs'] = 2
-        data[i]['train']= {'x': torch.tensor([df_circle[i].iloc[0:500,0:-8].values])[0],'y': torch.tensor([df_circle[i].iloc[0:500,-8+i:].values])[0]}
-        data[i]['test']= {'x': torch.tensor([df_circle[i].iloc[500:,0:-8].values])[0],'y': torch.tensor([df_circle[i].iloc[500:,-8+i:].values])[0]}
+        data[i]['train']= {'x': torch.tensor([df_circle[i].iloc[0:500,0:-8].values])[0],'y': torch.tensor([df_circle[i].iloc[0:500,-8+i].values])[0]}
+        data[i]['test']= {'x': torch.tensor([df_circle[i].iloc[500:,0:-8].values])[0],'y': torch.tensor([df_circle[i].iloc[500:,-8+i].values])[0]}
 
     # Arrow
     for i, action in enumerate(actions[1]):
         data[i+8] = {}
         data[i+8]['name'] = action
         data[i+8]['n_outputs'] = 2
-        data[i+8]['train']= {'x': torch.tensor([df_arrow[i].iloc[0:500,0:-8].values])[0],'y': torch.tensor([df_arrow[i].iloc[0:500,-8+i:].values])[0]}
-        data[i+8]['test']= {'x': torch.tensor([df_arrow[i].iloc[500:,0:-8].values])[0],'y': torch.tensor([df_arrow[i].iloc[500:,-8+i:].values])[0]}
+        data[i+8]['train']= {'x': torch.tensor([df_arrow[i].iloc[0:500,0:-8].values])[0],'y': torch.tensor([df_arrow[i].iloc[0:500,-8+i].values])[0]}
+        data[i+8]['test']= {'x': torch.tensor([df_arrow[i].iloc[500:,0:-8].values])[0],'y': torch.tensor([df_arrow[i].iloc[500:,-8+i].values])[0]}
 
     # Validation
     for t in data.keys():

@@ -43,13 +43,14 @@ class PUGCL(object):
 
         # Store best model
         best_model = copy.deepcopy(self.model.state_dict())
-        low_rate_tasks = [0, 4, 7, 9]
-        if task not in low_rate_tasks:
-            lr = 0.05
-            for param_group in self.optimizer.param_groups:
-                param_group['lr'] = lr
-        else:
-            lr = self.init_lr
+        lr = self.init_lr
+        # low_rate_tasks = [0, 4, 7, 9, 5]
+        # if task not in low_rate_tasks:
+        #     lr = 0.05
+        #     for param_group in self.optimizer.param_groups:
+        #         param_group['lr'] = lr
+        # else:
+        #     lr = self.init_lr
         patience = self.lr_patience
 
         # Iterate over number of epochs
@@ -95,11 +96,11 @@ class PUGCL(object):
                         params_dict = self.update_lr(task, adaptive_lr=True, lr=lr)
                         self.optimizer=BayesianSGD(params=params_dict)
 
-                # Increase leanring rate if possible:
-                if epoch > 30 and train_loss > 2:
-                    lr = 0.08
-                    for param_group in self.optimizer.param_groups:
-                        param_group['lr'] = lr
+                # # Increase leanring rate if possible:
+                # if epoch > 30 and train_loss > 2:
+                #     lr = 0.08
+                #     for param_group in self.optimizer.param_groups:
+                #         param_group['lr'] = lr
 
                 print()
 
@@ -267,7 +268,7 @@ class PUGCL(object):
             # Coefficients, not sure why:
             w1 = 1.e-3
             w2 = 1.e-3
-            w3 = 5.e-2
+            w3 = 9.e-2
 
             outputs = torch.stack(predictions, dim=0).to(self.device)
             log_var = w1*torch.as_tensor(log_variational_posteriors, device=self.device).mean()
