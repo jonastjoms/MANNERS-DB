@@ -60,7 +60,7 @@ class PUGCL(object):
                 clock0=time.time()
                 self.train_epoch(task, xtrain, ytrain)
                 clock1=time.time()
-                train_loss = self.eval(task, xtrain, ytrain)
+                train_loss, train_error = self.eval(task, xtrain, ytrain)
                 clock2=time.time()
 
                 print('| Epoch {:3d}, time={:5.1f}ms/{:5.1f}ms | Training loss: {:.3f} |'.format(epoch+1,
@@ -68,9 +68,11 @@ class PUGCL(object):
                     train_loss),end='')
 
                 # Validation:
-                valid_loss = self.eval(task, xvalid, yvalid)
+                valid_loss, valid_error = self.eval(task, xvalid, yvalid)
                 # Print learning rate
-                print(' Learning rate: {:.3f} |'.format(lr), end='')
+                #print(' Learning rate: {:.3f} |'.format(lr), end='')
+                # Print error:
+                print(' Training error: {:.3f} |'.format(train_error), end='')
 
                 # Check if loss is nan
                 if math.isnan(valid_loss) or math.isnan(train_loss):
@@ -96,11 +98,11 @@ class PUGCL(object):
                         params_dict = self.update_lr(task, adaptive_lr=True, lr=lr)
                         self.optimizer=BayesianSGD(params=params_dict)
 
-                # # Increase leanring rate if possible:
-                # if epoch > 30 and train_loss > 2:
-                #     lr = 0.08
-                #     for param_group in self.optimizer.param_groups:
-                #         param_group['lr'] = lr
+                # Increase leanring rate if possible:
+                if epoch > 30 and train_loss > 2:
+                    lr = 0.08
+                    for param_group in self.optimizer.param_groups:
+                        param_group['lr'] = lr
 
                 print()
 
@@ -197,7 +199,8 @@ class PUGCL(object):
             inputs, targets, = x[batch].to(self.device), y[batch].to(self.device)
 
             # Forward pass:
-            loss = self.elbo_loss(inputs, targets, task, num_batches, sample=True).to(self.device)
+            loss, error = self.elbo_loss(inputs, targets, task, num_batches, sample=True)
+            loss = loss.to(self.device)
 
             # Backward pass:
             #self.model.cuda()
@@ -210,7 +213,7 @@ class PUGCL(object):
 
     def eval(self, task, x, y, debug=False):
         total_loss = 0
-        total_acc = 0
+        total_error = 0
         total_num = 0
         self.model.eval()
 
@@ -228,14 +231,15 @@ class PUGCL(object):
                 inputs, targets, = x[batch].to(self.device), y[batch].to(self.device)
 
                 # Forward pass:
-                outputs = self.model(inputs, sample = False)
+                outputs = self.model(inputs, sample = False, sample_last_layer = False)
                 output = outputs[task]
-                loss = self.elbo_loss(inputs, targets, task, num_batches, sample=False, debug=debug)
+                loss, error = self.elbo_loss(inputs, targets, task, num_batches, sample=False, debug=debug)
 
                 total_loss += loss.detach()*len(batch)
+                total_error += error.detach()*len(batch)
                 total_num += len(batch)
 
-        return total_loss/total_num
+        return total_loss/total_num, total_error/total_num
 
     def set_model_(model, state_dict):
         model.model.load_state_dict(copy.deepcopy(state_dict))
@@ -247,20 +251,23 @@ class PUGCL(object):
         # Mean term
         mean = outputs[:,0:len_target//2]
         # Residual regression term
-        res_loss = torch.mean(0.5*torch.exp(-log_variance)*torch.square(target-mean), axis = 1)
+        error = target-mean
+        res_loss = torch.mean(0.5*torch.exp(-log_variance)*torch.square(error), axis = 1)
         # Uncertainty loss
-        unc_loss = torch.mean(0.5*torch.exp(log_variance))
+        unc_loss = torch.mean(0.5*torch.exp(log_variance), axis = 1)
         # Combined loss:
         loss = res_loss + unc_loss
         # Average over batch:
         loss = torch.mean(loss)
-        return loss
+        error = torch.mean(error)
+
+        return loss, error
 
     def elbo_loss(self, input, target, task, num_batches, sample, debug=False):
         if sample:
             log_priors, log_variational_posteriors, predictions = [], [], []
             for i in range(self.MC_samples):
-                predictions.append(self.model(input, sample=sample)[task])
+                predictions.append(self.model(input, sample=sample, sample_last_layer = sample)[task])
                 log_prior, log_variational_posterior = self.logs(task)
                 log_priors.append(log_prior)
                 log_variational_posteriors.append(log_variational_posterior)
@@ -268,31 +275,32 @@ class PUGCL(object):
             # Coefficients, not sure why:
             w1 = 1.e-3
             w2 = 1.e-3
-            w3 = 9.e-2
+            w3 = 5.e-2
 
             outputs = torch.stack(predictions, dim=0).to(self.device)
             log_var = w1*torch.as_tensor(log_variational_posteriors, device=self.device).mean()
             log_p = w2*torch.as_tensor(log_priors, device=self.device).mean()
 
             # This is where a custom loss function must be implemented:
-            #negative_log_likelihood = w3*torch.nn.functional.nll_loss(outputs.mean(0), target, reduction='sum').to(device=self.device)
-            loss = w3*self.loss(outputs.mean(0), target).to(device=self.device)
+            loss, error = self.loss(outputs.mean(0), target)
+            loss = w3*loss.to(device=self.device)
+            error = error.to(device=self.device)
 
-            return (log_var - log_p)/num_batches + loss
+            return (log_var - log_p)/num_batches + loss, error
 
         else:
             predictions = []
             for i in range(self.MC_samples):
-                predictions.append(self.model(input, sample=False)[task])
-
-            w3 = 5.e-6
+                predictions.append(self.model(input, sample=False, sample_last_layer = False)[task])
 
             outputs = torch.stack(predictions, dim=0).to(self.device)
 
             #negative_log_likelihood = w3*torch.nn.functional.nll_loss(outputs.mean(0), target, reduction='sum').to(device = self.device)
-            loss = self.loss(outputs.mean(0), target).to(device=self.device)
+            loss, error = self.loss(outputs.mean(0), target)
+            loss = loss.to(device=self.device)
+            error = error.to(device=self.device)
 
-            return loss
+            return loss, error
 
     def save_model(self, task):
         torch.save({'model_state_dict': self.model.state_dict(),

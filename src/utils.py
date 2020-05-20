@@ -72,12 +72,12 @@ def save_log(taskcla, acc, lss, data, output_path):
 def make_directories(args):
     if args.output=='':
         args.output = '{}_{}'.format(args.experiment,args.approach)
-        print (args.output)
+        #print (args.output)
     checkpoint = os.path.join(args.checkpoint_dir, args.output)
     if not os.path.exists(args.checkpoint_dir):
         os.mkdir(args.checkpoint_dir)
     if not os.path.exists(checkpoint):os.mkdir(checkpoint)
-    print("Results will be saved in ", checkpoint)
+    #print("Results will be saved in ", checkpoint)
 
     return checkpoint
 
