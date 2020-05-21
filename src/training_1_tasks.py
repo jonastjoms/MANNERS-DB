@@ -76,9 +76,10 @@ pickle.dump(data, open( "data/data_1_task.p", "wb" ))
 
 # Dict for best loss
 best_loss = {}
-best_loss['Loss'] = - np.inf
+best_loss['Loss'] = np.inf
+best_loss['Model'] = None
 
-for parameter_search in range(20):
+for parameter_search in range(50):
     # Determine the parameters for this run:
     args.n_epochs = np.random.choice(n_epochs)
     args.lr = np.random.choice(lr)
@@ -88,7 +89,7 @@ for parameter_search in range(20):
     print("Starting testing for parameters: Epoch = " + str(args.n_epochs) + " Lr = " + str(args.lr) + " Hidden_size = " + str(args.hidden_size))
     print('-'*100)
     # Name experiment based on parameters:
-    args.approach = args.approach + '_epochs_:' + str(args.n_epochs) + '_lr_:' + str(args.lr) + '_hidden_:' + str(args.hidden_size)
+    args.approach = 'PUGCL' + '_epochs_:' + str(args.n_epochs) + '_lr_:' + str(args.lr) + '_hidden_:' + str(args.hidden_size)
 
     # Checkpoint for this run
     checkpoint = utils.make_directories(args)
@@ -99,17 +100,7 @@ for parameter_search in range(20):
     model = BayesianNetwork(args).to(args.device)
 
     # Initialize Lul approach
-    #print("Initialize Lifelong Uncertainty-aware Learning")
     approach = PUGCL(model, args=args)
-    #print("-"*100)
-
-    # Check wether resuming:
-    if args.resume == "yes":
-        checkpoint = torch.load(os.path.join(args.checkpoint, 'model_{}.pth.tar'.format(args.sti)))
-        model.load_state_dict(checkpoint['model_state_dict'])
-        model = model.to(device=args.device)
-    else:
-        args.sti = 0
 
     # Iterate over the tasks:
     loss = np.zeros((len(task_outputs), len(task_outputs)), dtype=np.float32)
@@ -147,6 +138,6 @@ for parameter_search in range(20):
         continue
     if mean_loss < best_loss['Loss']:
         best_loss['Loss'] = mean_loss
-        best_loss['Model'] = args.experiment
-print(best_loss['Loss'])
-print(best_loss['Model'])
+        best_loss['Model'] = args.approach
+    print(best_loss['Loss'])
+    print(best_loss['Model'])

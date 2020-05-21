@@ -76,19 +76,23 @@ pickle.dump(data, open( "data/data_2_task.p", "wb" ))
 
 # Dict for best loss
 best_loss = {}
-best_loss['Loss'] = - np.inf
+best_loss['Loss'] = np.inf
+best_loss['Model'] = None
 
-for parameter_search in range(20):
+for parameter_search in range(50):
     # Determine the parameters for this run:
     args.n_epochs = np.random.choice(n_epochs)
     args.lr = np.random.choice(lr)
     args.hidden_size = np.random.choice(hidden_size)
+    task_order = np.arange(len(task_outputs))
+    np.random.shuffle(task_order)
+
     print()
     print('-'*100)
-    print("Starting testing for parameters: Epoch = " + str(args.n_epochs) + " Lr = " + str(args.lr) + " Hidden_size = " + str(args.hidden_size))
+    print("Starting testing for parameters: Epoch = " + str(args.n_epochs) + " Lr = " + str(args.lr) + " Hidden_size = " + str(args.hidden_size) + ' Task order: ' + str(task_order))
     print('-'*100)
     # Name experiment based on parameters:
-    args.approach = args.approach + '_epochs_:' + str(args.n_epochs) + '_lr_:' + str(args.lr) + '_hidden_:' + str(args.hidden_size)
+    args.approach = 'PUGCL' + '_epochs_:' + str(args.n_epochs) + '_lr_:' + str(args.lr) + '_hidden_:' + str(args.hidden_size) + '_task_order_:' + str(task_order)
 
     # Checkpoint for this run
     checkpoint = utils.make_directories(args)
@@ -99,21 +103,14 @@ for parameter_search in range(20):
     model = BayesianNetwork(args).to(args.device)
 
     # Initialize Lul approach
-    #print("Initialize Lifelong Uncertainty-aware Learning")
     approach = PUGCL(model, args=args)
-    #print("-"*100)
 
-    # Check wether resuming:
-    if args.resume == "yes":
-        checkpoint = torch.load(os.path.join(args.checkpoint, 'model_{}.pth.tar'.format(args.sti)))
-        model.load_state_dict(checkpoint['model_state_dict'])
-        model = model.to(device=args.device)
-    else:
-        args.sti = 0
 
     # Iterate over the tasks:
     loss = np.zeros((len(task_outputs), len(task_outputs)), dtype=np.float32)
-    for task, n_class in task_outputs[args.sti:]:
+    task_count = 0
+    for task, n_class in np.array(task_outputs)[task_order.astype(int)]:
+        task_count += 1
         print('*'*100)
         print('Task {:2d} ({:s})'.format(task, data[task]['name']))
         print('*'*100)
@@ -130,7 +127,7 @@ for parameter_search in range(20):
         print('_'*100)
 
         # Validate for this task group:
-        for u in range(task+1):
+        for u, n in np.array(task_outputs)[task_order[0:task_count].astype(int)]:
             xtest = data[u]['test']['x'][:,1:].type(torch.float32).to(args.device)
             ytest = data[u]['test']['y'].type(torch.float32).to(args.device)
             test_loss, test_error = approach.eval(u, xtest, ytest, debug=True)
@@ -142,11 +139,11 @@ for parameter_search in range(20):
         np.savetxt(os.path.join(args.checkpoint, '{}_{}_{}.txt'.format(args.experiment, args.approach, args.seed)), loss, '%.5f')
 
     # Check whether loss for this model is better than best loss:
-    mean_loss = np.mean(loss[-1,:])
+    mean_loss = np.mean(loss[task,:])
     if math.isnan(mean_loss):
         continue
     if mean_loss < best_loss['Loss']:
         best_loss['Loss'] = mean_loss
-        best_loss['Model'] = args.experiment
-print(best_loss['Loss'])
-print(best_loss['Model'])
+        best_loss['Model'] = args.approach
+    print(best_loss['Loss'])
+    print(best_loss['Model'])

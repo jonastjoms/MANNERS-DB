@@ -44,13 +44,7 @@ class PUGCL(object):
         # Store best model
         best_model = copy.deepcopy(self.model.state_dict())
         lr = self.init_lr
-        # low_rate_tasks = [0, 4, 7, 9, 5]
-        # if task not in low_rate_tasks:
-        #     lr = 0.05
-        #     for param_group in self.optimizer.param_groups:
-        #         param_group['lr'] = lr
-        # else:
-        #     lr = self.init_lr
+
         patience = self.lr_patience
 
         # Iterate over number of epochs
