@@ -19,7 +19,6 @@ class BayesianNetwork(nn.Module):
 
         # Two hidden layers:
         self.l1 = BayesianLinear(d*size, hidden_size, args)
-        self.l2 = BayesianLinear(hidden_size, hidden_size, args)
 
         # Last layer
         self.classifier = nn.ModuleList()
@@ -29,7 +28,6 @@ class BayesianNetwork(nn.Module):
     def forward(self, x, sample=False, sample_last_layer=False):
         x = x.view(x.size(0),-1)
         x = F.relu(self.l1(x, sample))
-        x = F.relu(self.l2(x, sample))
         y = []
         for task, output_size in self.task_outputs:
             y.append(self.classifier[task](x, sample_last_layer))
