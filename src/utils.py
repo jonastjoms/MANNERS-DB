@@ -70,7 +70,7 @@ def save_log(taskcla, acc, lss, data, output_path):
     print ("Log file saved in ", os.path.join(output_path, 'logs.p'))
 
 def make_directories(args):
-    args.output = '{}_{}'.format(args.experiment,args.approach)
+    args.output = '{}_{}'.format(args.n_tasks,args.approach)
     checkpoint = os.path.join(args.checkpoint_dir, args.output)
     if not os.path.exists(args.checkpoint_dir):
         os.mkdir(args.checkpoint_dir)
@@ -103,7 +103,7 @@ def print_log_acc_bwt(args, acc, lss):
 
     logs = {}
     # save results
-    logs['name'] = args.experiment
+    logs['name'] = args.n_tasks
     logs['taskcla'] = args.task_classes
     logs['acc'] = acc
     logs['loss'] = lss
@@ -112,7 +112,7 @@ def print_log_acc_bwt(args, acc, lss):
     logs['rij'] = acc[-1]
 
     # pickle
-    path = os.path.join(args.checkpoint, '{}_{}_seed_{}.p'.format(args.experiment,args.approach, args.seed))
+    path = os.path.join(args.checkpoint, '{}_{}_seed_{}.p'.format(args.n_tasks,args.approach, args.seed))
     with open(path, 'wb') as output:
         pickle.dump(logs, output)
 

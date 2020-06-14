@@ -11,7 +11,7 @@ tstart = time.time()
 parser=argparse.ArgumentParser(description='xxx')
 parser.add_argument('--seed',               default=0,                          type=int,     help='(default=%(default)d)')
 parser.add_argument('--device',             default='cpu',                      type=str,     help='gpu id')
-parser.add_argument('--experiment',         default='1_task',            type =str,    help='Mnist or dissertation')
+parser.add_argument('--n_tasks',            default= 1,                         type =int,    help='1, 2 or 16, referring to tasks')
 parser.add_argument('--approach',           default='UCB',                      type =str,    help='Method, always Lifelong Uncertainty-aware learning')
 parser.add_argument('--test_data_path',     default='data/data_test.csv',       type=str,     help='gpu id')
 parser.add_argument('--training_data_path', default='data/data_train.csv',      type=str,     help='gpu id')
@@ -19,7 +19,7 @@ parser.add_argument('--output',             default='',                         
 parser.add_argument('--checkpoint_dir',     default='../checkpoints',           type=str,     help='')
 parser.add_argument('--batch_size',         default=64,                         type=int,     help='')
 parser.add_argument('--parameter',          default='',                         type=str,     help='')
-parser.add_argument('--n_epochs',           default=150,                        type=int,     help='')
+parser.add_argument('--n_epochs',           default=200,                        type=int,     help='')
 parser.add_argument('--lr',                 default=0.06,                       type=float,   help='')
 parser.add_argument('--hidden_size',        default=800,                        type=int,     help='')
 
@@ -40,9 +40,6 @@ utils.print_arguments(args)
 #np.random.seed(args.seed)
 #torch.manual_seed(args.seed)
 
-# Print experiment:
-print(args.experiment)
-
 # Check if Cuda is available
 if torch.cuda.is_available():
     torch.cuda.manual_seed(args.seed)
@@ -52,11 +49,11 @@ if torch.cuda.is_available():
 print("Using device:", args.device)
 
 # Set n_task specific variables
-if args.experiment == '1_task':
+if args.n_tasks == 1:
     # Load data:
     from data import dataloader_1_tasks as train_dataloader
     from data import dataloader_1_tasks_test as test_dataloader
-elif args.experiment == '2_tasks':
+elif args.n_tasks == 2:
     # Load data:
     from data import dataloader_2_tasks as train_dataloader
     from data import dataloader_2_tasks_test as test_dataloader
@@ -64,7 +61,6 @@ else:
     # Load data:
     from data import dataloader_16_tasks as train_dataloader
     from data import dataloader_16_tasks_test as test_dataloader
-
 
 # Import training approach:
 from UCB_modified import UCB
@@ -79,12 +75,6 @@ print(datetime.now().strftime("%Y-%m-%d %H:%M"))
 # Load data:
 print("Loading data...")
 data_train, task_outputs, input_size = train_dataloader.get(data_path=args.training_data_path)
-if args.experiment == '16_tasks':
-    task_order = [9, 15, 1, 8, 13, 5, 3, 11, 4, 7, 12, 10, 6, 2, 0, 14]
-    data = {}
-    for i, task in enumerate(task_order):
-        data[i] = data_train[task]
-    data_train  = data
 data_test = test_dataloader.get(data_path=args.test_data_path)
 print("Input size =", input_size, "\nTask info =", task_outputs)
 args.num_tasks = len(task_outputs)
@@ -95,7 +85,7 @@ pickle.dump(data_train, open( "data/train_data_1_task.p", "wb" ))
 pickle.dump(data_test, open( "data/test_data_1_task.p", "wb" ))
 
 # Add to experiment name if testing:
-#args.experiment += '_test'
+#args.approach += '_test_'
 
 # Checkpoint for this run
 checkpoint = utils.make_directories(args)
@@ -111,6 +101,8 @@ approach = UCB(model, args=args)
 loss = np.zeros((len(task_outputs), len(task_outputs)), dtype=np.float32)
 # Dict to store validation loss per epoch for each task
 loss_epochs = {}
+loss_epochs['loss'] = {}
+loss_epochs['error'] = {}
 # Iterate over the tasks:
 for task, n_class in task_outputs[args.sti:]:
     print('*'*100)
@@ -118,7 +110,8 @@ for task, n_class in task_outputs[args.sti:]:
     print('*'*100)
 
     # Store validation loss per epoch
-    loss_epochs[task] = []
+    loss_epochs['loss'][task] = []
+    loss_epochs['error'][task] = []
     # Get data:
     xtrain = data_train[task]['train']['x'][:,1:].type(torch.float32).to(args.device)
     ytrain = data_train[task]['train']['y'].type(torch.float32).to(args.device)
@@ -130,8 +123,8 @@ for task, n_class in task_outputs[args.sti:]:
     loss_epochs = approach.train(task, xtrain, ytrain, xvalid, yvalid, loss_epochs)
     print('_'*100)
 
-    # Validate for this task group:
-    for u in range(task+1):
+    # Test for all task groups:
+    for u in range(args.n_tasks):
         xtest = data_test[u]['test']['x'][:,1:].type(torch.float32).to(args.device)
         ytest = data_test[u]['test']['y'].type(torch.float32).to(args.device)
         test_loss, test_error = approach.eval(u, xtest, ytest, debug=True)
@@ -140,5 +133,6 @@ for task, n_class in task_outputs[args.sti:]:
 
     # Save
     print("Saving at " + args.checkpoint)
-    np.savetxt(os.path.join(args.checkpoint, '{}_{}_{}.txt'.format(args.experiment, args.approach, args.seed)), loss, '%.5f')
-    pickle.dump(loss_epochs, open(os.path.join(args.checkpoint, 'loss_dict_{}_{}.p'.format(args.experiment, args.approach)), "wb" ))
+    np.savetxt(os.path.join(args.checkpoint, '{}_{}_{}.txt'.format(args.n_tasks, args.approach, args.seed)), loss, '%.5f')
+pickle.dump(loss_epochs, open(os.path.join(args.checkpoint, 'loss_epoch_dict.p'), "wb" ))
+pickle.dump(loss, open(os.path.join(args.checkpoint, 'loss_task_dict.p'), "wb" ))

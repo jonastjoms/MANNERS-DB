@@ -32,7 +32,7 @@ class BayesianLinear(nn.Module):
         self.weight_prior = ScaledMixtureGaussian(args)
         self.bias_prior = ScaledMixtureGaussian(args)
 
-        # Log prior and lof posterior:
+        # Log prior and log posterior:
         self.log_prior = 0
         self.log_variational_posterior = 0
 

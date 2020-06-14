@@ -18,8 +18,8 @@ def get(data_path):
     data[0] = {}
     data[0]['name'] = 'All actions'
     data[0]['n_outputs'] = 32
-    data[0]['train']= {'x': torch.tensor([full_set.iloc[0:10000,0:-8].values])[0],'y': torch.tensor([full_set.iloc[0:10000,-8:].values])[0]}
-    data[0]['valid']= {'x': torch.tensor([full_set.iloc[10000:,0:-8].values])[0],'y': torch.tensor([full_set.iloc[10000:,-8:].values])[0]}
+    data[0]['train']= {'x': torch.tensor([full_set.iloc[0:-1000,0:-8].values])[0],'y': torch.tensor([full_set.iloc[0:-1000,-8:].values])[0]}
+    data[0]['valid']= {'x': torch.tensor([full_set.iloc[-1000:,0:-8].values])[0],'y': torch.tensor([full_set.iloc[-1000:,-8:].values])[0]}
 
 
     # Others

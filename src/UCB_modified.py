@@ -60,7 +60,8 @@ class UCB(object):
 
                 # Validation:
                 valid_loss, valid_error = self.eval(task, xvalid, yvalid)
-                loss_epochs[task].append(valid_loss.detach().numpy())
+                loss_epochs['loss'][task].append(valid_loss.detach().numpy())
+                loss_epochs['error'][task].append(valid_error.detach().numpy())
                 # Print learning rate
                 #print(' Learning rate: {:.3f} |'.format(lr), end='')
                 # Print validation loss and error:
@@ -243,27 +244,28 @@ class UCB(object):
         len_target = outputs.shape[1]//2
         # If no CL, split in 2 batches for circle and arrow actions:
         mask = input[:,0].detach().numpy()
-        if (np.sum(mask) != 0) and (np.sum(mask) != input.shape[0]):
+        if (self.num_tasks == 1):
             no_cl  = True
+            # Circle is mask non-zero elements
+            circle_indices = np.nonzero(mask)
             # Mask is zero for rows with arrow
             arrow_indices = np.multiply(mask, np.arange(input.shape[0]))
             arrow_indices = np.where(arrow_indices == 0)[0]
             # Handle first element
             if mask[0] == 1:
                 arrow_indices = arrow_indices[1:]
-            # Circle is first 16 elements in output
-            arrow_outputs = outputs[arrow_indices,len_target:]
-            arrow_target = target[arrow_indices,:]
-            circle_indices = np.nonzero(mask)
-            circle_outputs = outputs[circle_indices[0],0:len_target]
+            # Mean is first 16 elements in output
+            # First 8 is circle mean
+            circle_mean = outputs[circle_indices[0],0:len_target//2]
             circle_target = target[circle_indices[0],:]
-            # Get the loss for both:
-            # Get log varience
-            log_variance_arrow = arrow_outputs[:,len_target//2:]
-            log_variance_circle = circle_outputs[:,len_target//2:]
-            # Mean term
-            arrow_mean = arrow_outputs[:,0:len_target//2]
-            circle_mean = circle_outputs[:,0:len_target//2]
+            # Second 8 is arrow mean
+            arrow_mean = outputs[arrow_indices,len_target//2:len_target]
+            arrow_target = target[arrow_indices,:]
+            # Get log varience, last 16 elements
+            # First 8 is circle variance
+            log_variance_circle = outputs[circle_indices[0],len_target:-8]
+            # Last 8 is arrow variance
+            log_variance_arrow = outputs[arrow_indices,-8:]
             # Residual regression term
             arrow_error = arrow_target - arrow_mean
             circle_error = circle_target - circle_mean
@@ -283,9 +285,10 @@ class UCB(object):
             unc_loss[circle_indices] = circle_unc_loss
             # Combined loss:
             loss = res_loss + unc_loss
-            # Average over batch:
+            # Get RMSE and Average over batch:
+            error = error.square()
             loss = torch.mean(loss)
-            error = torch.mean(error)
+            error = torch.sqrt(error.mean(0)).mean()
             return loss, error
 
         # Get log varience
@@ -304,7 +307,8 @@ class UCB(object):
         loss = res_loss + unc_loss
         # Average over batch:
         loss = torch.mean(loss)
-        error = torch.mean(error)
+        error = error.square()
+        error = torch.sqrt(error.mean(0)).mean()
 
         return loss, error
 
@@ -326,7 +330,7 @@ class UCB(object):
             log_var = w1*torch.as_tensor(log_variational_posteriors, device=self.device).mean()
             log_p = w2*torch.as_tensor(log_priors, device=self.device).mean()
 
-            # This is where a custom loss function must be implemented:
+            # This is where a custom loss function is implemented:
             loss, error = self.loss(outputs.mean(0), target, input)
             loss = w3*loss.to(device=self.device)
             error = error.to(device=self.device)
