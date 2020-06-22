@@ -110,7 +110,6 @@ loss_epochs['loss'] = {}
 loss_epochs['error'] = {}
 
 
-
 # Iterate over the tasks:
 for task, n_class in task_outputs[args.sti:]:
     print('*'*100)
