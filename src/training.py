@@ -13,8 +13,8 @@ parser.add_argument('--seed',               default=0,                          
 parser.add_argument('--device',             default='cpu',                      type=str,     help='gpu id')
 parser.add_argument('--n_tasks',            default= 1,                         type =int,    help='1, 2 or 16, referring to tasks')
 parser.add_argument('--approach',           default='UCB',                      type =str,    help='Method, always Lifelong Uncertainty-aware learning')
-parser.add_argument('--test_data_path',     default='data/data_test.csv',       type=str,     help='gpu id')
-parser.add_argument('--training_data_path', default='data/data_train.csv',      type=str,     help='gpu id')
+parser.add_argument('--test_data_path',     default='data/data_test_ale.csv',       type=str,     help='gpu id')
+parser.add_argument('--training_data_path', default='data/data_train_ale.csv',      type=str,     help='gpu id')
 parser.add_argument('--output',             default='',                         type=str,     help='')
 parser.add_argument('--checkpoint_dir',     default='../checkpoints',           type=str,     help='')
 parser.add_argument('--batch_size',         default=64,                         type=int,     help='')
@@ -80,12 +80,14 @@ print("Input size =", input_size, "\nTask info =", task_outputs)
 args.num_tasks = len(task_outputs)
 args.input_size = input_size
 args.task_outputs = task_outputs
+# Reorder task order to optimize performance:
+task_order = [9, 15, 1, 8, 13, 5, 3, 11, 4, 7, 12, 10, 6, 2, 0, 14]
 # Dump data so train/test split is stored
 pickle.dump(data_train, open( "data/train_data_1_task.p", "wb" ))
 pickle.dump(data_test, open( "data/test_data_1_task.p", "wb" ))
 
 # Add to experiment name if testing:
-#args.approach += '_test_'
+args.approach += '_aleatoric_'
 
 # Checkpoint for this run
 checkpoint = utils.make_directories(args)
@@ -93,6 +95,9 @@ args.checkpoint = checkpoint
 
 # Initialize Bayesian network
 model = BayesianNetwork(args).to(args.device)
+# Save initial model
+torch.save({'model_state_dict': model.state_dict(),
+}, os.path.join(checkpoint, 'initial_model.pth.tar'))
 
 # Initialize UCB
 approach = UCB(model, args=args)
@@ -103,6 +108,9 @@ loss = np.zeros((len(task_outputs), len(task_outputs)), dtype=np.float32)
 loss_epochs = {}
 loss_epochs['loss'] = {}
 loss_epochs['error'] = {}
+
+
+
 # Iterate over the tasks:
 for task, n_class in task_outputs[args.sti:]:
     print('*'*100)

@@ -30,8 +30,8 @@ def get(data_path):
 
     data[0]['train']={'x': [],'y': []}
     data[1]['train']={'x': [],'y': []}
-    data[0]['test']={'x': [],'y': []}
-    data[1]['test']={'x': [],'y': []}
+    data[0]['valid']={'x': [],'y': []}
+    data[1]['valid']={'x': [],'y': []}
 
     # Circle:
     count = 0
@@ -44,8 +44,8 @@ def get(data_path):
             data[0]['train']['y'].append(y)
         else:
             # Test data
-            data[0]['test']['x'].append(x)
-            data[0]['test']['y'].append(y)
+            data[0]['valid']['x'].append(x)
+            data[0]['valid']['y'].append(y)
         count += 1
 
     # Arrow:
@@ -59,21 +59,16 @@ def get(data_path):
             data[1]['train']['y'].append(y)
         else:
             # Test data
-            data[1]['test']['x'].append(x)
-            data[1]['test']['y'].append(y)
+            data[1]['valid']['x'].append(x)
+            data[1]['valid']['y'].append(y)
         count += 1
 
     # "Unify" and save
     for n in [0,1]:
-        for s in ['train','test']:
+        for s in ['train','valid']:
             data[n][s]['x'] = torch.stack(data[n][s]['x'])
             data[n][s]['y'] = torch.stack(data[n][s]['y'])
 
-    # Validation
-    for t in data.keys():
-        data[t]['valid']={}
-        data[t]['valid']['x']= data[t]['train']['x'].clone()
-        data[t]['valid']['y']= data[t]['train']['y'].clone()
 
     # Others
     n=0

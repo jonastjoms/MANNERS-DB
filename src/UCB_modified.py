@@ -321,7 +321,7 @@ class UCB(object):
                 log_priors.append(log_prior)
                 log_variational_posteriors.append(log_variational_posterior)
 
-            # Coefficients, not sure why:
+            # Coefficients, balancing loss:
             w1 = 1.e-3
             w2 = 1.e-3
             w3 = 5.e-2
@@ -335,7 +335,7 @@ class UCB(object):
             loss = w3*loss.to(device=self.device)
             error = error.to(device=self.device)
 
-            return (log_var - log_p)/num_batches + torch.log(loss), error
+            return (log_var - log_p)/num_batches + loss, error
 
         else:
             predictions = []
