@@ -272,8 +272,8 @@ class UCB(object):
             error = torch.zeros(outputs.shape[0], len_target//2)
             error[arrow_indices, :] = arrow_error
             error[circle_indices, :] = circle_error
-            arrow_res_loss = torch.mean(0.5*torch.exp(-log_variance_arrow)*torch.square(arrow_error), axis = 1)
-            circle_res_loss = torch.mean(0.5*torch.exp(-log_variance_circle)*torch.square(circle_error), axis = 1)
+            arrow_res_loss = torch.mean(0.5*torch.exp(-log_variance_arrow)*(arrow_error**2), axis = 1)
+            circle_res_loss = torch.mean(0.5*torch.exp(-log_variance_circle)*(circle_error**2), axis = 1)
             res_loss = torch.zeros(outputs.shape[0])
             res_loss[arrow_indices] = arrow_res_loss
             res_loss[circle_indices] = circle_res_loss
@@ -286,7 +286,7 @@ class UCB(object):
             # Combined loss:
             loss = res_loss + unc_loss
             # Get RMSE and Average over batch:
-            error = error.square()
+            error = error**2
             loss = torch.mean(loss)
             error = torch.sqrt(error.mean(0)).mean()
             return loss, error
@@ -300,14 +300,14 @@ class UCB(object):
             target = target.view(mean.shape[0],1)
         # Residual regression term
         error = target-mean
-        res_loss = torch.mean(0.5*torch.exp(-log_variance)*torch.square(error), axis = 1)
+        res_loss = torch.mean(0.5*torch.exp(-log_variance)*(error**2), axis = 1)
         # Uncertainty loss
         unc_loss = torch.mean(0.5*torch.exp(log_variance), axis = 1)
         # Combined loss:
         loss = res_loss + unc_loss
         # Average over batch:
         loss = torch.mean(loss)
-        error = error.square()
+        error = error**2
         error = torch.sqrt(error.mean(0)).mean()
 
         return loss, error
