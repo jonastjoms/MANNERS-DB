@@ -1,6 +1,6 @@
 # Continually learning social appropriateness of robot actions under uncertainty
 This repo contains all source code for the dissertation conducted in the Advanced computer science programm at Cambridge
-To run the code, create a new virtual environment with python 3.6.10, cd into the project folder and run "pip instal requirments.txt"
+To run the code, create a new virtual environment with python 3.6.10, cd into the project folder and run "pip install -r requirements.txt"
 
 ## The code of this prooject can be seprated in three parts:
 ### Scripts for data structuring and data analysis of the created and labelled SARDA dataset:
