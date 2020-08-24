@@ -1,8 +1,9 @@
 # Continually learning social appropriateness of robot actions under uncertainty
-This repo contains all source code for the work of Jonas Tjomsland, Sinan Kalkan and Hatice Gunes on Continually learning social appropriateness of robot actions [2]. 
+This repo contains all source code for the work of Jonas Tjomsland, Sinan Kalkan and Hatice Gunes on Continually learning social appropriateness of robot actions [2]. It also includes components for extracting uncertainty estimates in predictions.
+
 To run the code, create a new virtual environment with python 3.6.10, cd into the project folder and run "pip install -r requirements.txt"
 
-## The code of this prooject can be seprated in three parts:
+## The code of this project can be seprated in three parts:
 ### Scripts for data structuring and data analysis of the created and labelled MANNERS-DB dataset:
 #### The scripts in this part are found i the data folder and includes:
 - data_analysis.ipynb\
