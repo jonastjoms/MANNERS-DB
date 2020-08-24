@@ -1,14 +1,14 @@
 # Continually learning social appropriateness of robot actions under uncertainty
-This repo contains all source code for the dissertation conducted in the Advanced computer science programm at Cambridge
+This repo contains all source code for the work of Jonas Tjomsland, Sinan Kalkan and Hatice Gunes on Continually learning social appropriateness of robot actions [2]. 
 To run the code, create a new virtual environment with python 3.6.10, cd into the project folder and run "pip install -r requirements.txt"
 
 ## The code of this prooject can be seprated in three parts:
-### Scripts for data structuring and data analysis of the created and labelled SARDA dataset:
+### Scripts for data structuring and data analysis of the created and labelled MANNERS-DB dataset:
 #### The scripts in this part are found i the data folder and includes:
 - data_analysis.ipynb\
 Containing all statistical data analysis
 - data_structuring.ipynb\
-Cleaning and structuring the data from the Prolific platform befre saving it as csv.
+Cleaning and structuring the data from the Prolific crowd-labelling platform before saving it as csv.
 ### An extension of the Uncertainty-guided continual learning work by Ebrahimi et al. [1]:
 #### The scripts in this part includes:
 - UCB_modified.py\
@@ -23,8 +23,9 @@ The structure of the training script used by Ebrahimi et al. is kept, but modifi
 - Evaluation.ipynb\
 This is the main evaluation notebook where the epistemic uncertainty is obtained and performance is evaluated.
 - temp_eval.ipynb\
-A notebook used to investigate the model performance at different stages of the Continua learning.
+A notebook used to investigate the model performance at different stages of the Continual learning.
 
 
 
 [1] Ebrahimi, Sayna, et al. "Uncertainty-guided continual learning with bayesian neural networks." arXiv preprint arXiv:1906.02425 (2019).
+[2] Tjomsland J, Kalkan S, Gunes H. Mind Your Manners! A Dataset and A Continual Learning Approach for Assessing Social Appropriateness of Robot Actions. arXiv preprint arXiv:2007.12506. 2020 Jul 24.
