@@ -28,5 +28,6 @@ A notebook used to investigate the model performance at different stages of the 
 
 
 [1] Tjomsland J, Kalkan S, Gunes H. Mind Your Manners! A Dataset and A Continual Learning Approach for Assessing Social Appropriateness of Robot Actions. arXiv preprint arXiv:2007.12506. 2020 Jul 24.
+
 [2] Ebrahimi, Sayna, et al. "Uncertainty-guided continual learning with bayesian neural networks." arXiv preprint arXiv:1906.02425 (2019).
 
