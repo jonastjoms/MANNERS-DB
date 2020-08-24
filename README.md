@@ -1,5 +1,5 @@
 # Continually learning social appropriateness of robot actions under uncertainty
-This repo contains all source code for the work of Jonas Tjomsland, Sinan Kalkan and Hatice Gunes on Continually learning social appropriateness of robot actions [2]. It also includes components for extracting uncertainty estimates in predictions.
+This repo contains all source code for the work of Jonas Tjomsland, Sinan Kalkan and Hatice Gunes on Continually learning social appropriateness of robot actions [1]. It also includes components for extracting uncertainty estimates in predictions.
 
 To run the code, create a new virtual environment with python 3.6.10, cd into the project folder and run "pip install -r requirements.txt"
 
@@ -10,7 +10,7 @@ To run the code, create a new virtual environment with python 3.6.10, cd into th
 Containing all statistical data analysis
 - data_structuring.ipynb\
 Cleaning and structuring the data from the Prolific crowd-labelling platform before saving it as csv.
-### An extension of the Uncertainty-guided continual learning work by Ebrahimi et al. [1]:
+### An extension of the Uncertainty-guided continual learning work by Ebrahimi et al. [2]:
 #### The scripts in this part includes:
 - UCB_modified.py\
 The original work of Ebrahimi et al. with modifications to the loss function and some minor modifications to record the training process. The "loss" method is our 
@@ -27,6 +27,6 @@ This is the main evaluation notebook where the epistemic uncertainty is obtained
 A notebook used to investigate the model performance at different stages of the Continual learning.
 
 
+[1] Tjomsland J, Kalkan S, Gunes H. Mind Your Manners! A Dataset and A Continual Learning Approach for Assessing Social Appropriateness of Robot Actions. arXiv preprint arXiv:2007.12506. 2020 Jul 24.
+[2] Ebrahimi, Sayna, et al. "Uncertainty-guided continual learning with bayesian neural networks." arXiv preprint arXiv:1906.02425 (2019).
 
-[1] Ebrahimi, Sayna, et al. "Uncertainty-guided continual learning with bayesian neural networks." arXiv preprint arXiv:1906.02425 (2019).
-[2] Tjomsland J, Kalkan S, Gunes H. Mind Your Manners! A Dataset and A Continual Learning Approach for Assessing Social Appropriateness of Robot Actions. arXiv preprint arXiv:2007.12506. 2020 Jul 24.
