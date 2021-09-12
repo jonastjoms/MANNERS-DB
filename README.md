@@ -23,8 +23,8 @@ To be able to control but vary the configurations of the scenes and the social s
 
 ## Accessing the dataset
 
-All images, annotation labels and Unity files are accessible via the following link:
-**PLEASE FILL IN**
+For requesting an access to all images, annotation labels and Unity files, please fill in the 
+[Access Request Form](https://forms.gle/m1oWhRexWE8E2nnL6).
 
 # The code structure
 
@@ -59,6 +59,20 @@ A notebook used to investigate the model performance at different stages of the 
 # How to run the code
 
 To run the code, create a new virtual environment with python 3.6.10, cd into the project folder and run "pip install -r requirements.txt"
+
+# Copyright
+
+The restrictions for using the dataset, the Unity files and the code are listed in the following table. Note especially that the Unity files are subject to the license of Unity Asset Store (https://unity3d.com/legal/as_terms).
+
+
+| Intellectual Property | Commercial Use | Modification | Redistribution |
+| --------------------- | -------------- | ------------ | -------------- |
+|  Code                 | Yes            | Yes          | Yes (with Attribution) |
+| Dataset (Images, Scene Configurations and Annotations) | Yes | No | No | 
+| Unity Files [1] | No | No | No |
+
+[1] “[...] you will not reproduce, duplicate, copy, sell, trade or resell any Asset that you have licensed from the Unity Asset Store for any purpose.” -- From https://unity3d.com/legal/as_terms
+
 
 # How to cite
 
