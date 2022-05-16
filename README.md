@@ -92,7 +92,7 @@ If you use our work or dataset, please cite the following (available on [Arxiv](
 
 # Contact
 
-If you have any questions, please contact Jonas Tjomsland](https://www.linkedin.com/in/jtjomsland/?originalSubdomain=no).
+If you have any questions, please contact [Jonas Tjomsland](https://www.linkedin.com/in/jtjomsland/?originalSubdomain=no).
 
 # References
 
