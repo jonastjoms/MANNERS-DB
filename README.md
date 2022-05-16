@@ -1,6 +1,6 @@
 # Mind Your Manners! A Dataset and A Continual Learning Approach for Assessing Social Appropriateness of Robot Actions
 
-This is the official repository that contains the MANNERS all source code for the work of [Jonas Tjomsland](https://www.linkedin.com/in/jtjomsland/?originalSubdomain=no), [Sinan Kalkan](http://ceng.metu.edu.tr/~skalkan/) and [Hatice Gunes](https://www.cl.cam.ac.uk/~hg410/) on ["Mind Your Manners! A Dataset and A Continual Learning Approach for Assessing Social Appropriateness of Robot Actions"](https://arxiv.org/abs/2007.12506) [1]. It also includes components for extracting uncertainty estimates in predictions.
+This is the official repository that contains the MANNERS all source code for the work of [Jonas Tjomsland](https://www.linkedin.com/in/jtjomsland/?originalSubdomain=no), [Sinan Kalkan](http://ceng.metu.edu.tr/~skalkan/) and [Hatice Gunes](https://www.cl.cam.ac.uk/~hg410/) on ["Mind Your Manners! A Dataset and A Continual Learning Approach for Assessing Social Appropriateness of Robot Actions"](https://www.frontiersin.org/articles/10.3389/frobt.2022.669420/abstract) [1]. It also includes components for extracting uncertainty estimates in predictions.
 
 Our work has two main contributions:
 
@@ -79,11 +79,14 @@ The restrictions for using the dataset, the Unity files and the code are listed 
 If you use our work or dataset, please cite the following (available on [Arxiv](https://arxiv.org/abs/2007.12506)):
 
 ```
-@article{tjomsland2020mind,
+@article{tjomsland2022mind,
   title={Mind Your Manners! A Dataset and A Continual Learning Approach for Assessing Social Appropriateness of Robot Actions},
   author={Tjomsland, Jonas and Kalkan, Sinan and Gunes, Hatice},
-  journal={RO-MAN 2020 Workshop on Lifelong Learning for Long-term Human-Robot Interaction (LL4LHRI)},
-  year={2020}
+  journal={Frontiers in Robotics and AI},
+  volume={9},
+  pages={1-18},
+  year={2022},
+  publisher={Frontiers Media SA}
 }
 ```
 
@@ -93,7 +96,7 @@ If you have any questions, please contact Jonas Tjomsland](https://www.linkedin.
 
 # References
 
-[1] Tjomsland J, Kalkan S, Gunes H., ["Mind Your Manners! A Dataset and A Continual Learning Approach for Assessing Social Appropriateness of Robot Actions"](https://arxiv.org/abs/2007.12506), RO-MAN 2020 Workshop on Lifelong Learning for Long-term Human-Robot Interaction (LL4LHRI), 2020.
+[1] Tjomsland J, Kalkan S, Gunes H., ["Mind Your Manners! A Dataset and A Continual Learning Approach for Assessing Social Appropriateness of Robot Actions"](https://www.frontiersin.org/articles/10.3389/frobt.2022.669420/full), Frontiers in Robotics and AI, Special Issue on Lifelong Learning and Long-term Human-Robot Interaction, 9:1-18, 2022.
 
 [2] Ebrahimi, Sayna, et al. "Uncertainty-guided continual learning with bayesian neural networks." arXiv preprint arXiv:1906.02425 (2019).
 
